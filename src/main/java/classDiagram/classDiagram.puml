@@ -1,0 +1,98 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+Class Movies {
+- int id
+- private String title
+- private Set<Genre> genre
+- Set<Actor>actors
+- List<Director> directors
+- Localdate releaseYear
+- ProductionCountry productionCountry
+}
+
+Class Actor{
+- int id
+- String name
+- int gender
+}
+
+Class Director{
+- int id
+- String name
+}
+
+Class Genres{
+- int id
+- String name
+}
+
+Class ProductionCountry{
+- int id
+- String name
+}
+
+
+class MovieDAO{
+- getByProductionCountry
+- getAll
+- getMovieByTitle
+- List<Movies>saveMovies
+- List<Actor>getAllActorsByMovieTitle
+- List<Director>getAllDirectorsByMovieTitle
+}
+class ActorDAO{
+- List<Actors>saveActors
+}
+
+class DirectorDAO{
+- List<Director>saveActors
+}
+
+class GenreDAO{
+- List<Genres>saveGenres
+}
+
+class ProductionCountryDAO {
+- List<ProductionCountry>saveCountries
+}
+
+class MovieDTO{
+- private String title
+- private Set<Genre> genre
+- Set<Actor>actors
+- List<Director> directors
+- Localdate releaseYear
+- ProductionCountry productionCountry
+}
+
+
+class MovieService{
+- getByProductionCountry
+- getAll
+- getMovieByTitle
+- List<Movies>saveMovies
+- List<Actor>getAllActorsByMovieTitle
+- List<Director>getAllDirectorsByMovieTitle
+}
+
+class MovieController{}
+
+Movies --> MovieDAO
+Actor --> ActorDAO
+Director --> DirectorDAO
+Genres --> GenreDAO
+ProductionCountry --> ProductionCountryDAO
+
+ActorDAO --> MovieDTO
+GenreDAO --> MovieDTO
+DirectorDAO --> MovieDTO
+ProductionCountryDAO --> MovieDTO
+Movies --> MovieDTO
+
+MovieDTO -->MovieService
+
+MovieService --> MovieController
+
+
+@enduml
