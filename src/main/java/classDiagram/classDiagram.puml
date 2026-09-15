@@ -1,4 +1,4 @@
-@startuml
+w@startuml
 'https://plantuml.com/class-diagram
 
 Class Movies {
@@ -84,15 +84,16 @@ Director --> DirectorDAO
 Genres --> GenreDAO
 ProductionCountry --> ProductionCountryDAO
 
-ActorDAO --> MovieDTO
-GenreDAO --> MovieDTO
-DirectorDAO --> MovieDTO
-ProductionCountryDAO --> MovieDTO
-Movies --> MovieDTO
+MovieDAO --> MovieService
+ActorDAO --> MovieService
+GenreDAO --> MovieService
+DirectorDAO --> MovieService
+ProductionCountryDAO --> MovieService
 
-MovieDTO -->MovieService
 
-MovieService --> MovieController
+MovieService --> MovieDTO
+
+MovieDTO --> MovieController
 
 
 @enduml
