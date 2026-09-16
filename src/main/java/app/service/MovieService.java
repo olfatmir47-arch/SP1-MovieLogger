@@ -159,9 +159,6 @@ private MovieDTO toDTO(Movie movie) {
     dto.setTitle(movie.getTitle());
     dto.setReleaseDate(movie.getReleaseDate());
 
-
-    // Genres
-
     if (movie.getGenres() != null) {
 
         List<GenreDTO> genres = movie.getGenres()
@@ -171,9 +168,6 @@ private MovieDTO toDTO(Movie movie) {
 
         dto.setGenres(genres);
     }
-
-
-    // Production country
 
     if (movie.getProductionCountry() != null) {
 
@@ -191,7 +185,6 @@ private MovieDTO toDTO(Movie movie) {
     return dto;
 }
 
-
 private GenreDTO toGenreDTO(Genre genre) {
 
     GenreDTO dto = new GenreDTO();
@@ -201,7 +194,6 @@ private GenreDTO toGenreDTO(Genre genre) {
 
     return dto;
 }
-
 
 private ProductionCountryDTO toProductionCountryDTO(
         ProductionCountry country) {
