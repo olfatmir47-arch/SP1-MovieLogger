@@ -19,7 +19,7 @@ final class HibernateEmfBuilder {
             Configuration configuration = new Configuration();
             configuration.setProperties(props);
 
-            // Register entities to make Hibernate aware
+            // Register app.entities to make Hibernate aware
             EntityRegistry.registerEntities(configuration);
 
             ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()

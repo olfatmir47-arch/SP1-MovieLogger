@@ -1,7 +1,10 @@
-package DTOs;
+package app.DTOs;
+import lombok.*;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DirectorDTO {
     private int id;
     private String name;
