@@ -17,5 +17,5 @@ import java.util.List;
 public class CreditsDTO {
     private int id;
     private List<CastDTO> cast;
-    private List<DirectorDTO> crew;
+    private List<CrewDTO> crew;
 }

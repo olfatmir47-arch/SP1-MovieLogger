@@ -37,9 +37,14 @@ public class MovieService {
         return deserialization.convertCredits(response.body(), CreditsDTO.class);
     }
 
+    public DirectorDTO findDirector(CreditsDTO credits) {
+        return credits.getCrew().stream().filter(c -> "Director".equals(c.getJob())).map(c -> new DirectorDTO(c.getId(), c.getName(), c.getJob())).findFirst().orElse(null);
+    }
+
     public void printMovieAndCredits(int id) throws Exception {
         MovieDTO movieDTO = fetchMovie(id);
         CreditsDTO creditsDTO = fetchCredits(id);
+        DirectorDTO directorDTO = findDirector(creditsDTO);
 
         System.out.println("Title: " + movieDTO.getTitle());
         System.out.println("Release date: " + movieDTO.getReleaseDate());
@@ -54,9 +59,15 @@ public class MovieService {
             System.out.println(" - " + pc.getName());
         }
 
+        if (directorDTO != null) {
+            System.out.println("\n - " + directorDTO.getName() + " "+ directorDTO.getJob());
+        }
+
         System.out.println("\nCast:");
         for (CastDTO c : creditsDTO.getCast()) {
             System.out.println(" - " + c.getName() + " as " + c.getCharacter());
         }
+
+
     }
 }
