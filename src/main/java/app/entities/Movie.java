@@ -1,4 +1,4 @@
-package entities;
+package app.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,7 +24,7 @@ public class Movie {
             name = "movie_genre",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
-    private Set<Genre> genre;
+    private Set<Genre> genres;
     @ManyToMany
     @JoinTable(
             name = "movie_actor",

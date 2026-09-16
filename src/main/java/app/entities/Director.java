@@ -1,4 +1,4 @@
-package entities;
+package app.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,11 +12,12 @@ import java.util.Set;
 @ToString
 
 @Entity
-public class Genre {
+public class Director {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
-    @ManyToMany(mappedBy = "genres")
+    @ManyToMany(mappedBy = "directors")
     private Set<Movie> movies;
+
 }
