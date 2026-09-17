@@ -3,6 +3,7 @@ package app.Deserialization;
 
 import app.DTOs.CreditsDTO;
 import app.DTOs.MovieDTO;
+import app.DTOs.MovieResultsDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -32,5 +33,13 @@ public class Deserialization {
             throw new RuntimeException(e.getMessage());
         }
 
+    }
+
+    public MovieResultsDTO convertMovies(String json) {
+        try {
+            return objectMapper.readValue(json, MovieResultsDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to deserialize movies", e);
+        }
     }
 }

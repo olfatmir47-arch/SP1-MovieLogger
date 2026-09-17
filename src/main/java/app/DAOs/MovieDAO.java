@@ -15,8 +15,6 @@ public class MovieDAO {
         this.emf = emf;
     }
 
-
-    // ----- All The Getting -----
     public List<Movie> getAll() {
         EntityManager em = emf.createEntityManager();
 
@@ -66,16 +64,17 @@ public class MovieDAO {
         }
     }
 
-    public List<Actor> getAllActorsByMovieTitle(Movie movie) {
+
+    public List<Cast> getAllActorsByMovieTitle(Movie movie) {
         EntityManager em = emf.createEntityManager();
 
         try {
             return em.createQuery("""
                     SELECT a
                     FROM Movie m
-                    JOIN m.actors a
+                    JOIN m.cast a
                     WHERE m.id = :movieId
-                    """, Actor.class)
+                    """, Cast.class)
                     .setParameter("movieId", movie.getId())
                     .getResultList();
 
@@ -281,9 +280,47 @@ public class MovieDAO {
         }
     }
 
+    public Director getDirectorByName(String name) {
 
-    public ProductionCountry saveProductionCountry(
-            ProductionCountry country) {
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            return em.createQuery("""
+                    SELECT d
+                    FROM Director d
+                    WHERE LOWER(d.name) = LOWER(:name)
+                    """, Director.class)
+                    .setParameter("name", name)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
+        } finally {
+            em.close();
+        }
+    }
+    public Cast getCastByName(String name) {
+
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            return em.createQuery("""
+                    SELECT c
+                    FROM Cast c
+                    WHERE LOWER(c.name) = LOWER(:name)
+                    """, Cast.class)
+                    .setParameter("name", name)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
+        } finally {
+            em.close();
+        }
+    }
+
+
+    public ProductionCountry saveProductionCountry(ProductionCountry country) {
 
         EntityManager em = emf.createEntityManager();
 
@@ -309,7 +346,100 @@ public class MovieDAO {
         }
     }
 
+    public Director saveDirector(Director director) {
 
+        EntityManager em = emf.createEntityManager();
 
+        try {
+            em.getTransaction().begin();
+
+            em.persist(director);
+
+            em.getTransaction().commit();
+
+            return director;
+
+        } catch (Exception e) {
+
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+
+            throw e;
+
+        } finally {
+            em.close();
+        }
+    }
+
+    public Cast saveActor(Cast actor) {
+
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            em.getTransaction().begin();
+
+            em.persist(actor);
+
+            em.getTransaction().commit();
+
+            return actor;
+
+        } catch (Exception e) {
+
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+
+            throw e;
+
+        } finally {
+            em.close();
+        }
+    }
+
+    public Movie getMovieByTmdbId(int tmdbId) {
+
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            return em.createQuery("""
+                SELECT DISTINCT m
+                FROM Movie m
+                LEFT JOIN FETCH m.genres
+                LEFT JOIN FETCH m.cast
+                LEFT JOIN FETCH m.directors
+                LEFT JOIN FETCH m.productionCountry
+                WHERE m.tmdbId = :tmdbId
+                """, Movie.class)
+                    .setParameter("tmdbId", tmdbId)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
+        } finally {
+            em.close();
+        }
+    }
+
+    public Cast getCastByTmdbId(int tmdbId) {
+
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            return em.createQuery("""
+                SELECT c
+                FROM Cast c
+                WHERE c.tmdbId = :tmdbId
+                """, Cast.class)
+                    .setParameter("tmdbId", tmdbId)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
+        } finally {
+            em.close();
+        }
+    }
 }
 

@@ -15,6 +15,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 public class MovieDTO {
+
+    private int id;
     private String title;
 
     @JsonProperty("release_date")
