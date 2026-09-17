@@ -1,7 +1,8 @@
 package app.Deserialization;
 
-import DTOs.CreditsDTO;
-import DTOs.MovieDTO;
+
+import app.DTOs.CreditsDTO;
+import app.DTOs.MovieDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

@@ -1,8 +1,11 @@
-package DTOs;
+package app.DTOs;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
+@Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,5 +15,5 @@ import lombok.*;
 public class CreditsDTO {
     private int id;
     private List<CastDTO> cast;
-    private List<DirectorDTO> crew;
+    private List<CrewDTO> crew;
 }

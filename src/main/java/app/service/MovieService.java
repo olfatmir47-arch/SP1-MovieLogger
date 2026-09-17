@@ -1,13 +1,16 @@
 package app.service;
 
-import app.DTOs.MovieDTO;
-import app.DTOs.GenreDTO;
-import app.DTOs.ProductionCountryDTO;
+import app.DTOs.*;
+import app.Deserialization.Deserialization;
 import app.entities.Genre;
 import app.entities.Movie;
 import app.entities.ProductionCountry;
 import app.DAOs.MovieDAO;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,8 +19,8 @@ public class MovieService {
 
     private final MovieDAO movieDAO;
 
-    public MovieService(MovieDAO movieDAO) {
-        this.movieDAO = movieDAO;
+    public MovieService() {
+        this.movieDAO = null;
     }
 
     // ______________________\\
@@ -205,4 +208,68 @@ private ProductionCountryDTO toProductionCountryDTO(
 
     return dto;
 }
+
+     //______________________________\\
+    // ----- Fetching From TMBd ----- \\
+
+    public MovieDTO fetchMovie(int id) throws Exception {
+        String apiKey = System.getenv("apiKey");
+        String url = "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + apiKey;
+
+        HttpClient client = HttpClient.newHttpClient().newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        Deserialization deserialization = new Deserialization();
+        return deserialization.convertMovie(response.body());
+    }
+
+    public CreditsDTO fetchCredits(int id) throws Exception {
+        String apiKey = System.getenv("apiKey");
+        String url = "https://api.themoviedb.org/3/movie/" + id + "/credits?api_key=" + apiKey;
+
+        HttpClient client = HttpClient.newHttpClient().newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        Deserialization deserialization = new Deserialization();
+
+        return deserialization.convertCredits(response.body(), CreditsDTO.class);
+    }
+
+    public DirectorDTO findDirector(CreditsDTO credits) {
+        return credits.getCrew().stream().filter(c -> "Director".equals(c.getJob())).map(c -> new DirectorDTO(c.getId(), c.getName(), c.getJob())).findFirst().orElse(null);
+    }
+
+    public void printMovieAndCredits(int id) throws Exception {
+        MovieDTO movieDTO = fetchMovie(id);
+        CreditsDTO creditsDTO = fetchCredits(id);
+        DirectorDTO directorDTO = findDirector(creditsDTO);
+
+        System.out.println("Title: " + movieDTO.getTitle());
+        System.out.println("Release date: " + movieDTO.getReleaseDate());
+
+        System.out.println("Genres:");
+        for (GenreDTO g : movieDTO.getGenres()) {
+            System.out.println(" - " + g.getName());
+        }
+
+        System.out.println("Production countries:");
+        for (ProductionCountryDTO pc : movieDTO.getProductionCountries()) {
+            System.out.println(" - " + pc.getName());
+        }
+
+        if (directorDTO != null) {
+            System.out.println("\n - " + directorDTO.getName() + " "+ directorDTO.getJob());
+        }
+
+        System.out.println("\nCast:");
+        for (CastDTO c : creditsDTO.getCast()) {
+            System.out.println(" - " + c.getName() + " as " + c.getCharacter());
+        }
+
+
+    }
 }
