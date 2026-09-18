@@ -27,11 +27,11 @@ public class Movie {
     private Set<Genre> genres;
     @ManyToMany
     @JoinTable(
-            name = "movie_actor",
+            name = "movie_cast",
             joinColumns = @JoinColumn(name = "movie_id"),
-            inverseJoinColumns = @JoinColumn(name = "actor_id")
+            inverseJoinColumns = @JoinColumn(name = "cast_id")
     )
-    private Set<Actor> actors;
+    private Set<Cast> cast;
     @ManyToMany
     @JoinTable(
             name = "movie_director",
@@ -43,4 +43,7 @@ public class Movie {
     @ManyToOne
     @JoinColumn(name = "production_country_id")
     private ProductionCountry productionCountry;
+
+    @Column(unique = true, nullable = false)
+    private int tmdbId;
 }

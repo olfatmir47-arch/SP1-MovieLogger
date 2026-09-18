@@ -2,78 +2,86 @@ package app.service;
 
 import app.DTOs.*;
 import app.Deserialization.Deserialization;
-import app.entities.Genre;
-import app.entities.Movie;
-import app.entities.ProductionCountry;
+import app.entities.*;
 import app.DAOs.MovieDAO;
+import jakarta.persistence.EntityManagerFactory;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MovieService {
 
     private final MovieDAO movieDAO;
 
-    public MovieService() {
-        this.movieDAO = null;
+    public MovieService(EntityManagerFactory emf) {
+        this.movieDAO = new MovieDAO(emf);
     }
-
-    // ______________________\\
-    // ----- Get Movies -----\\
-
-    public List<MovieDTO> getAllMovies() {
-
-        return movieDAO.getAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
-    }
-
-    public List<MovieDTO> getMoviesByTitle(String title) {
-
-        return movieDAO.getMovieByTitle(title)
-                .stream()
-                .map(this::toDTO)
-                .toList();
-    }
-
-    public List<MovieDTO> getMoviesByProductionCountry(String country) {
-
-        return movieDAO.getByProductionCountry(country)
-                .stream()
-                .map(this::toDTO)
-                .toList();
-    }
-
 
     // -----------------------\\
     // ----- Save Movies -----\\
 
-    public MovieDTO saveMovie(MovieDTO movieDTO) {
+    public MovieDTO saveMovie(MovieDTO movieDTO, CreditsDTO creditsDTO) {
 
+        Movie existingMovie =
+                movieDAO.getMovieByTmdbId(movieDTO.getId());
+
+        if (existingMovie != null) {
+            System.out.println(
+                    "Already exists: " + existingMovie.getTitle()
+            );
+
+            return movieDTO;
+        }
         Movie movie = toEntity(movieDTO);
 
-        Movie savedMovie = movieDAO.saveMovie(movie);
+        addCreditsToMovie(movie, creditsDTO);
 
+        Movie savedMovie = movieDAO.saveMovie(movie);
+        System.out.println("Saving movie: " + movie.getTitle());
+        System.out.println("TMDB ID: " + movie.getTmdbId());
+        System.out.println("Cast:");
+
+        for (Cast cast : movie.getCast()) {
+            System.out.println(
+                    "  Cast DB ID: " + cast.getId()
+                            + " - " + cast.getName()
+            );
+        }
         return toDTO(savedMovie);
     }
 
-    public List<MovieDTO> saveMovies(List<MovieDTO> movieDTOs) {
 
-        List<Movie> movies = movieDTOs
-                .stream()
-                .map(this::toEntity)
-                .toList();
+    private void addCreditsToMovie(Movie movie, CreditsDTO creditsDTO){
+        if(creditsDTO == null){
+            return;
+        }
 
-        return movieDAO.saveMovies(movies)
-                .stream()
-                .map(this::toDTO)
-                .toList();
+        if (creditsDTO.getCast() != null) {
+
+            Map<Integer, Cast> uniqueCasts = new LinkedHashMap<>();
+
+            for (CastDTO dto : creditsDTO.getCast()) {
+                Cast cast = castDTOToEntity(dto);
+                uniqueCasts.put(cast.getId(), cast);
+            }
+
+            Set<Cast> casts = new HashSet<>(uniqueCasts.values());
+
+            movie.setCast(casts);
+        }
+
+        DirectorDTO directorDTO = findDirector(creditsDTO);
+
+        if (directorDTO != null) {
+
+            Director director = directorDTOToEntity(directorDTO);
+
+            movie.setDirectors(Set.of(director));;
+        }
     }
 
 
@@ -84,6 +92,7 @@ public class MovieService {
 
         Movie movie = new Movie();
 
+        movie.setTmdbId(dto.getId());
         movie.setTitle(dto.getTitle());
         movie.setReleaseDate(dto.getReleaseDate());
 
@@ -97,15 +106,13 @@ public class MovieService {
             movie.setGenres(genres);
         }
 
-        if (dto.getProductionCountries() != null) {
+        if (dto.getProductionCountries() != null &&
+                !dto.getProductionCountries().isEmpty()) {
 
             ProductionCountry country =
-                    dto.getProductionCountries()
-                            .stream()
-                            .filter(c -> "DK".equalsIgnoreCase(c.getIsoCode()))
-                            .findFirst()
-                            .map(this::productionCountryDTOToEntity)
-                            .orElse(null);
+                    productionCountryDTOToEntity(
+                            dto.getProductionCountries().get(0)
+                    );
 
             movie.setProductionCountry(country);
         }
@@ -135,22 +142,52 @@ public class MovieService {
             ProductionCountryDTO dto) {
 
         ProductionCountry existingCountry =
-                movieDAO.getProductionCountryByName(
-                        dto.getName()
-                );
+                movieDAO.getProductionCountryByName(dto.getName());
 
         if (existingCountry != null) {
             return existingCountry;
         }
 
-        ProductionCountry country =
-                new ProductionCountry();
+        ProductionCountry country = new ProductionCountry();
 
         country.setName(dto.getName());
 
         return movieDAO.saveProductionCountry(country);
     }
 
+    private Director directorDTOToEntity(DirectorDTO dto) {
+
+        Director existingDirector =
+                movieDAO.getDirectorByName(
+                        dto.getName()
+                );
+
+        if (existingDirector != null) {
+            return existingDirector;
+        }
+        Director director = new Director();
+
+        director.setName(dto.getName());
+
+        return movieDAO.saveDirector(director);
+    }
+
+    private Cast castDTOToEntity(CastDTO dto) {
+
+        Cast existingCast =
+                movieDAO.getCastByTmdbId(dto.getId());
+
+        if (existingCast != null) {
+            return existingCast;
+        }
+
+        Cast cast = new Cast();
+
+        cast.setTmdbId(dto.getId());
+        cast.setName(dto.getName());
+
+        return movieDAO.saveActor(cast);
+    }
 
     // ------------------------- \\
     // ----- Entity to DTO ----- \\
@@ -272,4 +309,46 @@ private ProductionCountryDTO toProductionCountryDTO(
 
 
     }
+
+    //______________________________\\
+    // ----- fetch by country ----- \\
+
+    public List<MovieDTO> fetchMovieByCountry(String country, String fromDate, String toDate, int page) throws Exception {
+
+
+        String apiKey = System.getenv("apiKey");
+
+            String url = "https://api.themoviedb.org/3/discover/movie"
+                + "?api_key=" + apiKey
+                + "&with_origin_country=" + country
+                + "&primary.release_date.gte=" + fromDate
+                + "&primary.release_date.lte=" + toDate
+                + "&page=" + page;
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response =
+                    client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            MovieResultsDTO movieResults =
+                    new Deserialization().convertMovies(response.body());
+
+            if (movieResults.getResults().isEmpty()) {
+                throw new RuntimeException("No movies found for: " + country);
+            }
+
+        return movieResults.getResults()
+                .stream()
+                .limit(20)
+                .toList();
+    }
+
+
+
+
 }

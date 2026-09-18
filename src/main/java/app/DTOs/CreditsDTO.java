@@ -16,4 +16,5 @@ public class CreditsDTO {
     private int id;
     private List<CastDTO> cast;
     private List<CrewDTO> crew;
+    private List<DirectorDTO> director;
 }
