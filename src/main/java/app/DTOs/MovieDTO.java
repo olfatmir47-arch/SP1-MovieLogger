@@ -1,7 +1,10 @@
 package app.DTOs;
 
+import app.entities.Director;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToOne;
 import lombok.*;
 
 import java.time.LocalDate;
