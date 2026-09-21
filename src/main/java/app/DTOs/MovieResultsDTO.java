@@ -20,5 +20,4 @@ public class MovieResultsDTO {
     @JsonProperty("total_results")
     private int totalResults;
 
-    // getters/setters
 }

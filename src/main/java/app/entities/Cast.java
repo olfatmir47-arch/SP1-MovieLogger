@@ -23,6 +23,7 @@ public class Cast {
 
     private String name;
 
-    @ManyToMany(mappedBy = "cast")
-    private Set<Movie> movies;
+    @ManyToOne
+    @JoinColumn(name = "movie_id")
+    private Movie movie;
 }

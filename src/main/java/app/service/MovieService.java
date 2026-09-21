@@ -55,7 +55,7 @@ public class MovieService {
     }
 
 
-    private void addCreditsToMovie(Movie movie, CreditsDTO creditsDTO){
+    public void addCreditsToMovie(Movie movie, CreditsDTO creditsDTO){
         if(creditsDTO == null){
             return;
         }
@@ -66,6 +66,7 @@ public class MovieService {
 
             for (CastDTO dto : creditsDTO.getCast()) {
                 Cast cast = castDTOToEntity(dto);
+                cast.setMovie(movie);
                 uniqueCasts.put(cast.getId(), cast);
             }
 
@@ -88,7 +89,7 @@ public class MovieService {
     // __________________________ \\
     // ----- DTO to Entitiy ----- \\
 
-    private Movie toEntity(MovieDTO dto) {
+    public Movie toEntity(MovieDTO dto) {
 
         Movie movie = new Movie();
 
@@ -121,7 +122,7 @@ public class MovieService {
     }
 
 
-    private Genre genreDTOToEntity(GenreDTO dto) {
+    public Genre genreDTOToEntity(GenreDTO dto) {
 
         Genre existingGenre =
                 movieDAO.getGenreByName(dto.getName());
@@ -138,7 +139,7 @@ public class MovieService {
     }
 
 
-    private ProductionCountry productionCountryDTOToEntity(
+    public ProductionCountry productionCountryDTOToEntity(
             ProductionCountryDTO dto) {
 
         ProductionCountry existingCountry =
@@ -172,7 +173,7 @@ public class MovieService {
         return movieDAO.saveDirector(director);
     }
 
-    private Cast castDTOToEntity(CastDTO dto) {
+    public Cast castDTOToEntity(CastDTO dto) {
 
         Cast existingCast =
                 movieDAO.getCastByTmdbId(dto.getId());
@@ -192,7 +193,7 @@ public class MovieService {
     // ------------------------- \\
     // ----- Entity to DTO ----- \\
 
-private MovieDTO toDTO(Movie movie) {
+public MovieDTO toDTO(Movie movie) {
 
     MovieDTO dto = new MovieDTO();
 
